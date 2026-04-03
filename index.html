@@ -1,168 +1,230 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BD Trademark Certificate Generator</title>
+<title>Trademark Certificate Generator</title>
+
 <style>
-body { font-family: Arial, sans-serif; background: #f2f2f2; padding: 20px; }
-#form-container, #preview-container { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
-label { display: block; margin-top: 10px; }
-input, select, textarea { width: 100%; padding: 5px; margin-top: 5px; }
-button { margin-top: 15px; padding: 10px 15px; background: #007BFF; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
-canvas { border: 1px solid #000; margin-top: 20px; }
+
+body{
+font-family:Times New Roman;
+background:#0f172a;
+color:white;
+margin:0;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.container{
+display:flex;
+flex-direction:column;
+width:95%;
+max-width:900px;
+margin-top:20px;
+}
+
+input,textarea{
+width:100%;
+padding:8px;
+margin:6px 0;
+border-radius:6px;
+border:none;
+}
+
+button{
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+background:#3b82f6;
+color:white;
+cursor:pointer;
+}
+
+.preview{
+margin-top:30px;
+}
+
+#certificate{
+
+width:794px;
+height:1123px;
+background:white;
+color:black;
+padding:60px;
+box-shadow:0 0 10px rgba(0,0,0,0.5);
+
+}
+
+.center{text-align:center;}
+
+.logo{
+width:120px;
+margin:auto;
+display:block;
+}
+
+.footer{
+display:flex;
+justify-content:space-between;
+margin-top:120px;
+}
+
 </style>
 </head>
+
 <body>
 
-<h1>BD Trademark Certificate Generator (A4)</h1>
+<div class="container">
 
-<div id="form-container">
-<label>FORM NAME: <input type="text" id="formName" value="TMR-1 Form"></label>
-<label>SERIAL NO: <input type="text" id="serialNo"></label>
-<label>CERT TITLE: <input type="text" id="certTitle" value="Certificate of Registration of Trademark [Rule 30(1)]"></label>
-<label>TM NO: <input type="text" id="tmNo"><button type="button" onclick="generateRandomTM()">Random</button></label>
-<label>REG DATE: <input type="date" id="regDate"></label>
-<label>SEALING DATE: <input type="date" id="sealingDate"></label>
-<label>CLASS: <input type="text" id="class" value="35"></label>
-<label>OWNER/COMPANY: <input type="text" id="owner"></label>
-<label>ADDRESS & SERVICE DESC: <textarea id="address"></textarea></label>
-<label>SIGNATORY: <input type="text" id="signatory"></label>
-<label>DESIGNATION: <input type="text" id="designation"></label>
-<label>LOGO TEXT: <input type="text" id="logoText"></label>
-<label>LOGO IMAGE: <input type="file" id="logoUpload" accept="image/*"></label>
-<label>BODY TEXT: <textarea id="bodyText">Certified that the Trademark of which a representation is given below has been registered under the provisions of Rule 30(1)...</textarea></label>
-<button onclick="generateCertificate()">Generate Certificate</button>
-<button onclick="downloadJPG()">Download JPG</button>
+<h2>Trademark Certificate Generator</h2>
+
+<label>Form Name</label>
+<input id="formname" oninput="update()" value="TMR-1 Form">
+
+<label>Certificate Title</label>
+<input id="title" oninput="update()" value="Certificate of Registration of Trademark">
+
+<label>Trademark No</label>
+<input id="tmno" oninput="update()">
+
+<label>Registration Date</label>
+<input id="regdate" oninput="update()">
+
+<label>Owner / Company</label>
+<input id="owner" oninput="update()">
+
+<label>Address</label>
+<textarea id="address" oninput="update()"></textarea>
+
+<label>Service Description</label>
+<textarea id="service" oninput="update()"></textarea>
+
+<label>Signatory</label>
+<input id="signatory" oninput="update()">
+
+<label>Designation</label>
+<input id="designation" oninput="update()">
+
+<label>Upload Logo</label>
+<input type="file" id="logoUpload" onchange="logoPreview(event)">
+
 <button onclick="downloadPDF()">Download PDF</button>
+
 </div>
 
-<div id="preview-container">
-<canvas id="certCanvas" width="2480" height="3508"></canvas>
+<div class="preview">
+
+<div id="certificate">
+
+<div style="display:flex;justify-content:space-between;">
+<div id="pform">TMR-1 Form</div>
+<div>Serial No.</div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<h2 class="center">Government Certificate</h2>
+
+<h3 class="center" id="ptitle">
+Certificate of Registration of Trademark
+</h3>
+
+<div style="display:flex;justify-content:space-between;margin-top:20px;">
+<div>Trademark No: <span id="ptmno"></span></div>
+<div>Date: <span id="pregdate"></span></div>
+</div>
+
+<p style="margin-top:40px;" id="pbody">
+</p>
+
+<img id="logo" class="logo">
+
+<div class="footer">
+
+<div>
+Sealed at my direction
+</div>
+
+<div>
+<div id="psign"></div>
+<div id="pdes"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-// Firebase config - replace with your project
-const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-projectId: "YOUR_PROJECT_ID",
-storageBucket: "YOUR_PROJECT_ID.appspot.com",
-messagingSenderId: "YOUR_SENDER_ID",
-appId: "YOUR_APP_ID"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-const canvas = document.getElementById('certCanvas');
-const ctx = canvas.getContext('2d');
-let logoImg = null;
+function update(){
 
-document.getElementById('logoUpload').addEventListener('change', function(e){
-const file = e.target.files[0];
-if(file){
-const reader = new FileReader();
-reader.onload = function(evt){
-logoImg = new Image();
-logoImg.src = evt.target.result;
-}
-reader.readAsDataURL(file);
-}
-});
+document.getElementById("pform").innerText =
+document.getElementById("formname").value
 
-function generateRandomTM(){
-document.getElementById('tmNo').value = 'TM' + Math.floor(Math.random()*100000);
-}
+document.getElementById("ptitle").innerText =
+document.getElementById("title").value
 
-function generateCertificate(){
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-ctx.fillStyle = "#fff";
-ctx.fillRect(0,0,canvas.width,canvas.height);
+document.getElementById("ptmno").innerText =
+document.getElementById("tmno").value
 
-// HEADER
-ctx.fillStyle = "#000";
-ctx.font = "60px Arial";
-ctx.fillText(document.getElementById('formName').value, 50, 150); // Top Left
-ctx.fillText("Serial No: " + document.getElementById('serialNo').value, 1800, 150); // Top Right
-ctx.font = "80px Arial";
-ctx.textAlign = "center";
-ctx.fillText("Government of the People's Republic of Bangladesh", canvas.width/2, 250);
-ctx.font = "50px Arial";
-ctx.fillText("Department of Patents, Designs & Trademarks", canvas.width/2, 320);
+document.getElementById("pregdate").innerText =
+document.getElementById("regdate").value
 
-// Certificate Title
-ctx.font = "70px Arial";
-ctx.fillText(document.getElementById('certTitle').value, canvas.width/2, 500);
+let owner=document.getElementById("owner").value
+let address=document.getElementById("address").value
+let service=document.getElementById("service").value
 
-// TM No & Date
-ctx.textAlign = "left";
-ctx.font = "50px Arial";
-ctx.fillText("Trademark No: " + document.getElementById('tmNo').value, 100, 600);
-ctx.textAlign = "right";
-ctx.fillText("Date: " + document.getElementById('regDate').value, canvas.width-100, 600);
+document.getElementById("pbody").innerText=
+"Certified that the Trademark of "+owner+
+" located at "+address+
+" for services: "+service
 
-// Body Text
-ctx.textAlign = "left";
-ctx.font = "40px Arial";
-ctx.fillText(document.getElementById('bodyText').value, 100, 700, canvas.width-200);
+document.getElementById("psign").innerText=
+document.getElementById("signatory").value
 
-// Class & Service
-ctx.fillText("Class: " + document.getElementById('class').value, 100, 1200);
-ctx.fillText("Service: " + document.getElementById('address').value, 100, 1270);
+document.getElementById("pdes").innerText=
+document.getElementById("designation").value
 
-// Logo Text & Image
-ctx.fillText(document.getElementById('logoText').value, 1200, 1400);
-if(logoImg){
-ctx.drawImage(logoImg, 2000, 1000, 400, 400);
 }
 
-// Footer: Seal & Signatory
-ctx.fillText("Sealing Date: " + document.getElementById('sealingDate').value, 100, 3300);
-ctx.textAlign = "right";
-ctx.fillText(document.getElementById('signatory').value, canvas.width-100, 3300);
-ctx.fillText(document.getElementById('designation').value, canvas.width-100, 3360);
+function logoPreview(event){
 
-// Save to Firebase
-const data = {
-formName: document.getElementById('formName').value,
-serialNo: document.getElementById('serialNo').value,
-certTitle: document.getElementById('certTitle').value,
-tmNo: document.getElementById('tmNo').value,
-regDate: document.getElementById('regDate').value,
-sealingDate: document.getElementById('sealingDate').value,
-class: document.getElementById('class').value,
-owner: document.getElementById('owner').value,
-address: document.getElementById('address').value,
-signatory: document.getElementById('signatory').value,
-designation: document.getElementById('designation').value,
-logoText: document.getElementById('logoText').value,
-bodyText: document.getElementById('bodyText').value,
-timestamp: Date.now()
-};
-db.ref('certificates/' + data.tmNo).set(data);
+let reader=new FileReader()
+
+reader.onload=function(){
+
+document.getElementById("logo").src=reader.result
+
 }
 
-function downloadJPG(){
-const link = document.createElement('a');
-link.download = document.getElementById('tmNo').value + ".jpg";
-link.href = canvas.toDataURL("image/jpeg", 1.0);
-link.click();
+reader.readAsDataURL(event.target.files[0])
+
 }
 
-function downloadPDF(){
-if(typeof jsPDF === "undefined") {
-alert("PDF download requires jsPDF library.");
-return;
+async function downloadPDF(){
+
+const { jsPDF } = window.jspdf
+
+html2canvas(document.getElementById("certificate")).then(canvas=>{
+
+let img=canvas.toDataURL("image/png")
+
+let pdf=new jsPDF("p","mm","a4")
+
+pdf.addImage(img,"PNG",0,0,210,297)
+
+pdf.save("certificate.pdf")
+
+})
+
 }
-const pdf = new jsPDF('p', 'pt', [canvas.width, canvas.height]);
-pdf.addImage(canvas.toDataURL("image/jpeg"), 'JPEG', 0, 0, canvas.width, canvas.height);
-pdf.save(document.getElementById('tmNo').value + ".pdf");
-}
+
 </script>
+
 </body>
 </html>
