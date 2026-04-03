@@ -2,105 +2,344 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Thermex Complete Certificate Generator</title>
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+<title>Thermex Trademark Certificate Generator</title>
 <style>
-body{font-family:Times New Roman; background:#0f172a; color:white; margin:0; display:flex; flex-direction:column; align-items:center;}
-.container{display:flex; flex-direction:column; width:95%; max-width:900px; margin-top:20px;}
-input,textarea{width:100%; padding:8px; margin:6px 0; border-radius:6px; border:none;}
-button{padding:10px; margin-top:10px; border:none; border-radius:6px; background:#3b82f6; color:white; cursor:pointer;}
-#certificate{width:794px; height:1123px; background:white; color:black; padding:40px; box-shadow:0 0 10px rgba(0,0,0,0.5); margin-bottom:30px; position: relative;}
-.center{text-align:center;}
-.logos{display:flex; justify-content:space-between; align-items:center; margin-top:10px;}
-.logo{width:80px; height:80px;}
-#pserial{font-family:'Patrick Hand', cursive; font-size:16px;}
-#trademarkLogo{display:block; margin:20px auto 0 auto;}
-.footer{display:flex; justify-content:space-between; margin-top:40px;}
-#bodyText{margin-top:30px; line-height:1.6; font-size:16px;}
-#brandName{margin-top:20px; text-align:center; font-size:14px; font-weight:bold;}
-#sealDate{margin-top:20px; font-size:14px;}
-#qrCode{position:absolute; bottom:40px; right:30px;}
+body{
+    font-family:"Times New Roman", serif;
+    display:flex;
+    gap:20px;
+    padding:20px;
+    background:#f0f0f0;
+}
+
+.controls{
+    width:350px;
+}
+
+.controls input, .controls textarea, .controls select{
+    width:100%;
+    padding:5px;
+    margin:5px 0;
+}
+
+.controls button{
+    margin-top:10px;
+    padding:8px;
+    cursor:pointer;
+}
+
+.preview{
+    width:210mm;
+    height:297mm;
+    border:1px solid #000;
+    position:relative;
+    background:white;
+    box-sizing:border-box;
+    padding:20mm;
+}
+
+.logo, #trademarkLogo{
+    display:block;
+}
+
+.leftLogo{
+    position:absolute;
+    top:50mm;
+    left:35mm;
+    width:80px;
+    height:80px;
+}
+
+.rightLogo{
+    position:absolute;
+    top:50mm;
+    right:35mm;
+    width:80px;
+    height:80px;
+}
+
+#trademarkLogo{
+    position:absolute;
+    top:190mm;
+    left:50%;
+    transform:translateX(-50%);
+    width:120px;
+    height:120px;
+}
+
+.trendmark{
+    position:absolute;
+    top:105mm;
+    left:30mm;
+    font-weight:bold;
+    font-size:16px;
+}
+
+.date{
+    position:absolute;
+    top:105mm;
+    right:30mm;
+    font-size:16px;
+}
+
+.bodyText{
+    position:absolute;
+    top:120mm;
+    left:35mm;
+    width:140mm;
+    line-height:1.6;
+    font-size:16px;
+}
+
+.brandName{
+    position:absolute;
+    top:225mm;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:14px;
+}
+
+.sealDate{
+    position:absolute;
+    top:240mm;
+    left:35mm;
+    font-size:14px;
+}
+
+.signature{
+    position:absolute;
+    top:240mm;
+    right:35mm;
+}
+
+.signatureName{
+    font-size:16px;
+    font-weight:bold;
+}
+
+.signatureTitle{
+    font-size:14px;
+}
+
+.footerText{
+    position:absolute;
+    top:265mm;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:12px;
+}
+
+.qrCode{
+    position:absolute;
+    top:255mm;
+    right:30mm;
+    width:90px;
+    height:90px;
+}
+
+.governmentTitle{
+    position:absolute;
+    top:35mm;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:26px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.departmentName{
+    position:absolute;
+    top:48mm;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:16px;
+    text-align:center;
+}
+
+.certificateTitle{
+    position:absolute;
+    top:85mm;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:24px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.formName{
+    position:absolute;
+    top:20mm;
+    left:25mm;
+    font-size:14px;
+}
+
+.serialNo{
+    position:absolute;
+    top:20mm;
+    right:25mm;
+    font-size:14px;
+}
 </style>
 </head>
-
 <body>
 
-<div class="container">
-<h2>Thermex Complete Certificate Generator</h2>
+<div class="controls">
+<h3>Certificate Input Panel</h3>
 
-<label>Certificate Details (CSV: Serial,TrademarkNo,Date,Owner,LogoURL,BrandName,SealDate)</label>
-<textarea id="certificateList" rows="10" placeholder="Ex: 001,TMR123,2026-04-03,Thermex,https://link.png,Thermex Brand,2026-04-03"></textarea>
+<label>Form Name</label>
+<input id="formNameInput" value="TMR-1 Form">
 
-<label>Logo Width (px)</label>
-<input id="logoWidth" type="number" value="120">
-<label>Logo Height (px)</label>
-<input id="logoHeight" type="number" value="120">
+<label>Serial No</label>
+<input id="serialNoInput">
 
-<button onclick="generateCompletePDF()">Generate Single PDF</button>
+<label>Government Title</label>
+<input id="govTitleInput" value="Government of the People's Republic of Bangladesh">
+
+<label>Department Name</label>
+<input id="deptNameInput" value="Department of Patents, Designs & Trade Marks Ministry of Industries, Shilpa Bhaban, Dhaka-1000.">
+
+<label>Certificate Title</label>
+<input id="certTitleInput" value="Certificate of Registration of Trademark [Rule 30(1)]">
+
+<label>Trendmark No.</label>
+<input type="text" id="trendmark" readonly>
+<button onclick="generateTrendmark()">R</button>
+
+<label>Registration Date</label>
+<input id="regDateInput" type="date">
+
+<label>Seal Date</label>
+<input id="sealDateInput" type="date">
+
+<label>Owner / Company</label>
+<input id="ownerInput">
+
+<label>Address</label>
+<textarea id="addressInput" rows="3"></textarea>
+
+<label>Service Description</label>
+<textarea id="serviceInput" rows="3"></textarea>
+
+<label>Trademark Logo Upload</label>
+<input type="file" id="trademarkLogoInput">
+
+<label>Left Logo Upload</label>
+<input type="file" id="leftLogoInput">
+
+<label>Right Logo Upload</label>
+<input type="file" id="rightLogoInput">
+
+<label>Brand Name</label>
+<input id="brandNameInput">
+
+<label>Seal Text</label>
+<input id="sealTextInput" value="Sealed at my direction this">
+
+<label>Signature Name</label>
+<input id="sigNameInput" value="Md Emdadul Haque">
+
+<label>Designation</label>
+<input id="sigTitleInput" value="Director General Deputy Reg Department of Patents, Designs and Trademarks">
+
+<label>Footer Text</label>
+<input id="footerInput" value="Registration is given for 7 years... (See Section 22 of the Trademarks Act, 2005)">
+
+<button onclick="updatePreview()">Update Preview</button>
+<button onclick="downloadPDF()">Download PDF</button>
 </div>
 
-<div class="preview" id="previewContainer"></div>
+<div class="preview" id="preview">
+
+<div class="formName" id="pformName"></div>
+<div class="serialNo" id="pserialNo"></div>
+<div class="governmentTitle" id="pGovTitle"></div>
+<div class="departmentName" id="pDeptName"></div>
+<div class="certificateTitle" id="pCertTitle"></div>
+
+<div class="trendmark">Trendmark No: <span id="ptrendmark"></span></div>
+<div class="date" id="pRegDate"></div>
+
+<div class="bodyText" id="pBodyText"></div>
+
+<img id="trademarkLogo" src="">
+<img class="leftLogo" id="pLeftLogo" src="">
+<img class="rightLogo" id="pRightLogo" src="">
+
+<div class="brandName" id="pBrandName"></div>
+<div class="sealDate" id="pSealDate"></div>
+<div class="signature">
+    <div class="signatureName" id="pSigName"></div>
+    <div class="signatureTitle" id="pSigTitle"></div>
+</div>
+
+<div class="footerText" id="pFooter"></div>
+<div class="qrCode" id="pQRCode"></div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-async function generateCompletePDF(){
-  const listText = document.getElementById("certificateList").value;
-  const lines = listText.trim().split("\n");
-  const previewContainer = document.getElementById("previewContainer");
-  previewContainer.innerHTML = '';
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p","mm","a4");
+// Generate random Trendmark No
+function generateTrendmark(){
+    let randomNumber = Math.floor(100000 + Math.random()*900000);
+    document.getElementById("trendmark").value = randomNumber;
+    updatePreview();
+}
 
-  for(let i=0;i<lines.length;i++){
-    const [serial, tmno, date, owner, logoURL, brandName, sealDate] = lines[i].split(",");
+// Update Preview
+function updatePreview(){
+    document.getElementById("pformName").innerText = document.getElementById("formNameInput").value;
+    document.getElementById("pserialNo").innerText = document.getElementById("serialNoInput").value;
+    document.getElementById("pGovTitle").innerText = document.getElementById("govTitleInput").value;
+    document.getElementById("pDeptName").innerText = document.getElementById("deptNameInput").value;
+    document.getElementById("pCertTitle").innerText = document.getElementById("certTitleInput").value;
+    document.getElementById("ptrendmark").innerText = document.getElementById("trendmark").value;
+    document.getElementById("pRegDate").innerText = document.getElementById("regDateInput").value;
+    let bodyText = "Certified that the Trademark of "+document.getElementById("ownerInput").value+
+        " located at "+document.getElementById("addressInput").value+
+        " for services: "+document.getElementById("serviceInput").value;
+    document.getElementById("pBodyText").innerText = bodyText;
+    document.getElementById("pBrandName").innerText = document.getElementById("brandNameInput").value;
+    document.getElementById("pSealDate").innerText = document.getElementById("sealTextInput").value + " " + document.getElementById("sealDateInput").value;
+    document.getElementById("pSigName").innerText = document.getElementById("sigNameInput").value;
+    document.getElementById("pSigTitle").innerText = document.getElementById("sigTitleInput").value;
+    document.getElementById("pFooter").innerText = document.getElementById("footerInput").value;
+}
 
-    const certDiv = document.createElement("div");
-    certDiv.id="certificate";
-    certDiv.innerHTML=`
-      <div style="text-align:center; font-weight:bold; font-size:26px;">Government of the People's Republic of Bangladesh</div>
-      <div style="text-align:center; font-size:16px; margin-top:8px;">Department of Patents, Designs & Trademarks</div>
-      <div class="logos">
-        <img src="https://drive.google.com/uc?export=view&id=1IBOIVAFAWqp19F3nNEFnU18jTcA37Mqm" class="logo">
-        <div id="pserial">Serial No: ${serial}</div>
-        <img src="https://drive.google.com/uc?export=view&id=1iwm0JsMlVduiAH9XxaNnWojTN7Gnubr8" class="logo">
-      </div>
-      <h2 class="center" style="margin-top:20px; font-size:24px; font-weight:bold;">Certificate of Registration of Trademark<br>[Rule 30(1)]</h2>
-      <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:16px;">
-        <div>Trademark No: ${tmno}</div>
-        <div>Date: ${date}</div>
-      </div>
-      <p id="bodyText">This is to certify that the trademark “${owner}” has been duly registered under the Trade Marks Act, 2009. This certificate is issued in accordance with the provisions of Rule 30(1) of the Trademark Rules, 2019.</p>
-      <img id="trademarkLogo" src="${logoURL}" style="width:${document.getElementById("logoWidth").value}px; height:${document.getElementById("logoHeight").value}px;">
-      <div id="brandName">${brandName}</div>
-      <div class="footer">
-        <div id="sealDate">Sealed Date: ${sealDate}</div>
-        <div style="text-align:right;">
-          <div id="psign">Md Emdadul Haque</div>
-          <div id="pdes" style="font-weight:bold;">Md. Emdadul Haque<br>Directe General Deputy Reg Department of Patres, Desags and Trademarka</div>
-        </div>
-      </div>
-      <div id="qrCode"></div>
-    `;
-    previewContainer.appendChild(certDiv);
+// Logo Previews
+document.getElementById("trademarkLogoInput").addEventListener("change",function(e){
+    let reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById("trademarkLogo").src = reader.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
+document.getElementById("leftLogoInput").addEventListener("change",function(e){
+    let reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById("pLeftLogo").src = reader.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
+document.getElementById("rightLogoInput").addEventListener("change",function(e){
+    let reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById("pRightLogo").src = reader.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
 
-    // Generate QR Code
-    new QRCode(certDiv.querySelector("#qrCode"), {
-      text: `Serial:${serial}, Trademark:${tmno}`,
-      width:90,
-      height:90
+// PDF Download
+async function downloadPDF(){
+    const { jsPDF } = window.jspdf;
+    html2canvas(document.getElementById("preview")).then(canvas=>{
+        let img=canvas.toDataURL("image/png");
+        let pdf=new jsPDF("p","mm","a4");
+        pdf.addImage(img,"PNG",0,0,210,297);
+        pdf.save("certificate.pdf");
     });
-
-    await html2canvas(certDiv).then(canvas=>{
-      const img = canvas.toDataURL("image/png");
-      if(i>0) pdf.addPage();
-      pdf.addImage(img,"PNG",0,0,210,297);
-    });
-  }
-  pdf.save("thermex_certificates_complete.pdf");
-  alert("All certificates generated in single PDF!");
 }
 </script>
 
