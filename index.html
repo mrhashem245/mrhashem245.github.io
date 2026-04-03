@@ -2,228 +2,106 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Trademark Certificate Generator</title>
+<title>Thermex Complete Certificate Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-
-body{
-font-family:Times New Roman;
-background:#0f172a;
-color:white;
-margin:0;
-display:flex;
-flex-direction:column;
-align-items:center;
-}
-
-.container{
-display:flex;
-flex-direction:column;
-width:95%;
-max-width:900px;
-margin-top:20px;
-}
-
-input,textarea{
-width:100%;
-padding:8px;
-margin:6px 0;
-border-radius:6px;
-border:none;
-}
-
-button{
-padding:10px;
-margin-top:10px;
-border:none;
-border-radius:6px;
-background:#3b82f6;
-color:white;
-cursor:pointer;
-}
-
-.preview{
-margin-top:30px;
-}
-
-#certificate{
-
-width:794px;
-height:1123px;
-background:white;
-color:black;
-padding:60px;
-box-shadow:0 0 10px rgba(0,0,0,0.5);
-
-}
-
+body{font-family:Times New Roman; background:#0f172a; color:white; margin:0; display:flex; flex-direction:column; align-items:center;}
+.container{display:flex; flex-direction:column; width:95%; max-width:900px; margin-top:20px;}
+input,textarea{width:100%; padding:8px; margin:6px 0; border-radius:6px; border:none;}
+button{padding:10px; margin-top:10px; border:none; border-radius:6px; background:#3b82f6; color:white; cursor:pointer;}
+#certificate{width:794px; height:1123px; background:white; color:black; padding:40px; box-shadow:0 0 10px rgba(0,0,0,0.5); margin-bottom:30px; position: relative;}
 .center{text-align:center;}
-
-.logo{
-width:120px;
-margin:auto;
-display:block;
-}
-
-.footer{
-display:flex;
-justify-content:space-between;
-margin-top:120px;
-}
-
+.logos{display:flex; justify-content:space-between; align-items:center; margin-top:10px;}
+.logo{width:80px; height:80px;}
+#pserial{font-family:'Patrick Hand', cursive; font-size:16px;}
+#trademarkLogo{display:block; margin:20px auto 0 auto;}
+.footer{display:flex; justify-content:space-between; margin-top:40px;}
+#bodyText{margin-top:30px; line-height:1.6; font-size:16px;}
+#brandName{margin-top:20px; text-align:center; font-size:14px; font-weight:bold;}
+#sealDate{margin-top:20px; font-size:14px;}
+#qrCode{position:absolute; bottom:40px; right:30px;}
 </style>
 </head>
 
 <body>
 
 <div class="container">
+<h2>Thermex Complete Certificate Generator</h2>
 
-<h2>Trademark Certificate Generator</h2>
+<label>Certificate Details (CSV: Serial,TrademarkNo,Date,Owner,LogoURL,BrandName,SealDate)</label>
+<textarea id="certificateList" rows="10" placeholder="Ex: 001,TMR123,2026-04-03,Thermex,https://link.png,Thermex Brand,2026-04-03"></textarea>
 
-<label>Form Name</label>
-<input id="formname" oninput="update()" value="TMR-1 Form">
+<label>Logo Width (px)</label>
+<input id="logoWidth" type="number" value="120">
+<label>Logo Height (px)</label>
+<input id="logoHeight" type="number" value="120">
 
-<label>Certificate Title</label>
-<input id="title" oninput="update()" value="Certificate of Registration of Trademark">
-
-<label>Trademark No</label>
-<input id="tmno" oninput="update()">
-
-<label>Registration Date</label>
-<input id="regdate" oninput="update()">
-
-<label>Owner / Company</label>
-<input id="owner" oninput="update()">
-
-<label>Address</label>
-<textarea id="address" oninput="update()"></textarea>
-
-<label>Service Description</label>
-<textarea id="service" oninput="update()"></textarea>
-
-<label>Signatory</label>
-<input id="signatory" oninput="update()">
-
-<label>Designation</label>
-<input id="designation" oninput="update()">
-
-<label>Upload Logo</label>
-<input type="file" id="logoUpload" onchange="logoPreview(event)">
-
-<button onclick="downloadPDF()">Download PDF</button>
-
+<button onclick="generateCompletePDF()">Generate Single PDF</button>
 </div>
 
-<div class="preview">
-
-<div id="certificate">
-
-<div style="display:flex;justify-content:space-between;">
-<div id="pform">TMR-1 Form</div>
-<div>Serial No.</div>
-</div>
-
-<h2 class="center">Government Certificate</h2>
-
-<h3 class="center" id="ptitle">
-Certificate of Registration of Trademark
-</h3>
-
-<div style="display:flex;justify-content:space-between;margin-top:20px;">
-<div>Trademark No: <span id="ptmno"></span></div>
-<div>Date: <span id="pregdate"></span></div>
-</div>
-
-<p style="margin-top:40px;" id="pbody">
-</p>
-
-<img id="logo" class="logo">
-
-<div class="footer">
-
-<div>
-Sealed at my direction
-</div>
-
-<div>
-<div id="psign"></div>
-<div id="pdes"></div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<div class="preview" id="previewContainer"></div>
 
 <script>
+async function generateCompletePDF(){
+  const listText = document.getElementById("certificateList").value;
+  const lines = listText.trim().split("\n");
+  const previewContainer = document.getElementById("previewContainer");
+  previewContainer.innerHTML = '';
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p","mm","a4");
 
-function update(){
+  for(let i=0;i<lines.length;i++){
+    const [serial, tmno, date, owner, logoURL, brandName, sealDate] = lines[i].split(",");
 
-document.getElementById("pform").innerText =
-document.getElementById("formname").value
+    const certDiv = document.createElement("div");
+    certDiv.id="certificate";
+    certDiv.innerHTML=`
+      <div style="text-align:center; font-weight:bold; font-size:26px;">Government of the People's Republic of Bangladesh</div>
+      <div style="text-align:center; font-size:16px; margin-top:8px;">Department of Patents, Designs & Trademarks</div>
+      <div class="logos">
+        <img src="https://drive.google.com/uc?export=view&id=1IBOIVAFAWqp19F3nNEFnU18jTcA37Mqm" class="logo">
+        <div id="pserial">Serial No: ${serial}</div>
+        <img src="https://drive.google.com/uc?export=view&id=1iwm0JsMlVduiAH9XxaNnWojTN7Gnubr8" class="logo">
+      </div>
+      <h2 class="center" style="margin-top:20px; font-size:24px; font-weight:bold;">Certificate of Registration of Trademark<br>[Rule 30(1)]</h2>
+      <div style="display:flex;justify-content:space-between;margin-top:20px;font-size:16px;">
+        <div>Trademark No: ${tmno}</div>
+        <div>Date: ${date}</div>
+      </div>
+      <p id="bodyText">This is to certify that the trademark “${owner}” has been duly registered under the Trade Marks Act, 2009. This certificate is issued in accordance with the provisions of Rule 30(1) of the Trademark Rules, 2019.</p>
+      <img id="trademarkLogo" src="${logoURL}" style="width:${document.getElementById("logoWidth").value}px; height:${document.getElementById("logoHeight").value}px;">
+      <div id="brandName">${brandName}</div>
+      <div class="footer">
+        <div id="sealDate">Sealed Date: ${sealDate}</div>
+        <div style="text-align:right;">
+          <div id="psign">Md Emdadul Haque</div>
+          <div id="pdes" style="font-weight:bold;">Md. Emdadul Haque<br>Directe General Deputy Reg Department of Patres, Desags and Trademarka</div>
+        </div>
+      </div>
+      <div id="qrCode"></div>
+    `;
+    previewContainer.appendChild(certDiv);
 
-document.getElementById("ptitle").innerText =
-document.getElementById("title").value
+    // Generate QR Code
+    new QRCode(certDiv.querySelector("#qrCode"), {
+      text: `Serial:${serial}, Trademark:${tmno}`,
+      width:90,
+      height:90
+    });
 
-document.getElementById("ptmno").innerText =
-document.getElementById("tmno").value
-
-document.getElementById("pregdate").innerText =
-document.getElementById("regdate").value
-
-let owner=document.getElementById("owner").value
-let address=document.getElementById("address").value
-let service=document.getElementById("service").value
-
-document.getElementById("pbody").innerText=
-"Certified that the Trademark of "+owner+
-" located at "+address+
-" for services: "+service
-
-document.getElementById("psign").innerText=
-document.getElementById("signatory").value
-
-document.getElementById("pdes").innerText=
-document.getElementById("designation").value
-
+    await html2canvas(certDiv).then(canvas=>{
+      const img = canvas.toDataURL("image/png");
+      if(i>0) pdf.addPage();
+      pdf.addImage(img,"PNG",0,0,210,297);
+    });
+  }
+  pdf.save("thermex_certificates_complete.pdf");
+  alert("All certificates generated in single PDF!");
 }
-
-function logoPreview(event){
-
-let reader=new FileReader()
-
-reader.onload=function(){
-
-document.getElementById("logo").src=reader.result
-
-}
-
-reader.readAsDataURL(event.target.files[0])
-
-}
-
-async function downloadPDF(){
-
-const { jsPDF } = window.jspdf
-
-html2canvas(document.getElementById("certificate")).then(canvas=>{
-
-let img=canvas.toDataURL("image/png")
-
-let pdf=new jsPDF("p","mm","a4")
-
-pdf.addImage(img,"PNG",0,0,210,297)
-
-pdf.save("certificate.pdf")
-
-})
-
-}
-
 </script>
 
 </body>
